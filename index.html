@@ -14,13 +14,21 @@
     background: #ffffff;
   }
   span {
-    color: #000000;
     font-size: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   }
 </style>
 </head>
 <body>
-  <span>YAO Chung-Han's GH</span>
+  <span id="txt">YAO Chung-Han's GH</span>
+  <script>
+    const colors = ["#000000", "#ffffff", "#808080", "#ffffff"];
+    let i = 0;
+    const el = document.getElementById("txt");
+    setInterval(() => {
+      i = (i + 1) % colors.length;
+      el.style.color = colors[i];
+    }, 100);
+  </script>
 </body>
 </html>
