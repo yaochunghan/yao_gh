@@ -140,7 +140,7 @@
   <section id="login">
     <div class="card">
       <h2>同學好</h2>
-      <p>輸入學號才開始對話。分身會陪你把想法想清楚。24小時在線。</p>
+      <p>輸入學號才開始對話。分身會陪你把想法想清楚。</p>
       <input id="sno" inputmode="text" autocomplete="off" placeholder="學號">
       <button id="login-btn" class="primary" type="button">進入</button>
       <div class="err" id="login-err"></div>
@@ -160,7 +160,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.10";
+const APP_VERSION = "v1.12";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
