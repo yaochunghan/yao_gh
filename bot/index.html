@@ -6,28 +6,31 @@
 <meta name="robots" content="noindex, nofollow">
 <title>姚老師的數位分身｜大一姚組</title>
 <style>
+  /* 配色對齊 yao work 公開課程頁（foundation）那套「壞掉」視覺系統：
+     米白底、螢光黃綠強調色、純黑細邊框、無陰影。深色模式沿用同一個強調色，
+     邊框改成淺色才看得見（主站各頁都沒有深色模式，這裡是聊天介面才保留這個切換）。*/
   :root {
-    --bg: #f4f2ee;
-    --paper: #ffffff;
-    --ink: #1d1d1b;
-    --muted: #7a776f;
-    --line: #dedad2;
-    --accent: #2f4a3a;
-    --me: #2f4a3a;
-    --me-ink: #f4f2ee;
+    --bg: #f5f3ed;
+    --paper: #fbfaf7;
+    --ink: #111111;
+    --muted: #66655f;
+    --line: #111111;
+    --accent: #d7ff3f;
+    --me: #d7ff3f;
+    --me-ink: #111111;
     --err: #a3392b;
     color-scheme: light;
   }
   [data-theme="dark"] {
-    --bg: #161715;
-    --paper: #22231f;
-    --ink: #ecebe6;
-    --muted: #9a978e;
-    --line: #3a3b36;
-    --accent: #7fa88d;
-    --me: #3d5c48;
-    --me-ink: #f1f0ea;
-    --err: #e08a7c;
+    --bg: #17181a;
+    --paper: #202224;
+    --ink: #f2f1ec;
+    --muted: #9a988f;
+    --line: #f2f1ec;
+    --accent: #d7ff3f;
+    --me: #d7ff3f;
+    --me-ink: #111111;
+    --err: #ff9a86;
     color-scheme: dark;
   }
   body, header, form, textarea, input, .bot, button { transition: background-color .2s, color .2s, border-color .2s; }
@@ -46,7 +49,7 @@
     border-bottom: 1px solid var(--line);
     display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
   }
-  header h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: .04em; }
+  header h1 { font-size: 17px; font-weight: 800; margin: 0; letter-spacing: .02em; }
   header .sub { font-size: 13px; color: var(--muted); }
   button {
     font: inherit; cursor: pointer; border: 1px solid var(--line);
@@ -54,14 +57,14 @@
     padding: 6px 14px; font-size: 13px;
   }
   button:hover { border-color: var(--ink); }
-  button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--ink); border-color: var(--ink); }
   .hdr { display: flex; gap: 8px; align-items: center; }
   button:disabled { opacity: .45; cursor: default; }
 
   /* 登入 */
   #login { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .card { width: 100%; max-width: 360px; }
-  .card h2 { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
+  .card h2 { font-size: 22px; font-weight: 800; margin: 0 0 6px; letter-spacing: -.01em; }
   .card p { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
   .card input {
     width: 100%; font: inherit; padding: 12px 14px; border: 1px solid var(--line);
@@ -74,8 +77,8 @@
   /* 對話 */
   #chat { flex: 1; display: none; flex-direction: column; min-height: 0; }
   #msgs { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-  .msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; white-space: pre-wrap; word-break: break-word; }
-  .bot { align-self: flex-start; background: var(--paper); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; border: 1px solid var(--ink); white-space: pre-wrap; word-break: break-word; }
+  .bot { align-self: flex-start; background: var(--paper); border-bottom-left-radius: 4px; }
   .me { align-self: flex-end; background: var(--me); color: var(--me-ink); border-bottom-right-radius: 4px; }
   .note { align-self: center; color: var(--muted); font-size: 13px; text-align: center; }
   .typing span { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: var(--muted); animation: b 1.2s infinite; }
