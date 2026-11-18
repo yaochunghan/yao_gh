@@ -160,7 +160,8 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.9";
+const APP_VERSION = "v1.10";
+const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
   try {
@@ -173,8 +174,8 @@ function fmtUpdated(iso) {
 function showUpdated(iso) {
   if (!iso) return;
   knowledgeUpdated = fmtUpdated(iso);
-  $("ver").textContent = `${APP_VERSION}｜資料庫更新：${knowledgeUpdated}`;
-  if (!$("left").dataset.count) $("left").textContent = `資料庫更新：${knowledgeUpdated}`;
+  $("ver").textContent = `${APP_VERSION}｜教學資料更新：${knowledgeUpdated}`;
+  if (!$("left").dataset.count) $("left").textContent = `教學資料更新：${knowledgeUpdated}`;
 }
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -197,7 +198,7 @@ $("theme-btn").onclick = () => {
   store.set("sb_theme", t);
   applyTheme(t);
 };
-let studentNo = null, studentName = "", convId = null, busy = false;
+let sessionToken = "", studentNo = null, studentName = "", convId = null, busy = false;
 
 function uuid() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -209,9 +210,14 @@ async function call(payload) {
   const r = await fetch(API, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ student_no: studentNo, ...payload }),
+    body: JSON.stringify({ student_no: studentNo, token: sessionToken, ...payload }),
   });
   const data = await r.json().catch(() => ({}));
+  if (data.relogin) {
+    note(data.error);
+    setTimeout(logout, 2500);
+    throw Object.assign(new Error(data.error), { silent: true });
+  }
   if (!r.ok) throw new Error(data.error || "連線有問題，請稍後再試。");
   return data;
 }
@@ -258,22 +264,18 @@ function greet() {
 
 async function enter(sno) {
   studentNo = sno;
-  const { name, updated } = await call({ action: "login" });
+  const { name, updated, token } = await call({ action: "login" });
+  sessionToken = token || "";
   studentName = name;
   showUpdated(updated);
-  store.set("sb_sno", sno);
   $("login").style.display = "none";
   $("chat").style.display = "flex";
   $("hdr-actions").style.display = "flex";
   $("who").textContent = name;
-  convId = store.get("sb_conv") || uuid();
-  store.set("sb_conv", convId);
+  convId = uuid(); // 每次登入都是新的對話，不載入之前的內容
   $("msgs").innerHTML = "";
   greet();
-  try {
-    const { messages } = await call({ action: "history", conversation_id: convId });
-    messages.forEach(m => add(m.role, m.content));
-  } catch {}
+  resetIdle();
   $("q").focus();
 }
 
@@ -293,15 +295,24 @@ $("sno").addEventListener("keydown", e => {
 $("new-btn").onclick = () => {
   if (busy) return;
   convId = uuid();
-  store.set("sb_conv", convId);
   $("msgs").innerHTML = "";
   greet();
   $("q").focus();
 };
-$("out-btn").onclick = () => {
-  store.del("sb_sno"); store.del("sb_conv");
+function logout() {
+  store.del("sb_sno"); store.del("sb_conv"); // 清掉舊版留下的紀錄
   location.reload();
-};
+}
+$("out-btn").onclick = logout;
+
+// 閒置自動登出
+let idleTimer = null;
+function resetIdle() {
+  if (!studentNo) return;
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(logout, IDLE_MINUTES * 60 * 1000);
+}
+["keydown", "click", "touchstart"].forEach(ev => document.addEventListener(ev, resetIdle, { passive: true }));
 
 const q = $("q");
 if (matchMedia("(pointer: coarse)").matches) q.placeholder = "想問什麼？";
@@ -337,7 +348,7 @@ $("f").onsubmit = async (e) => {
     $("left").textContent = remaining >= 999 ? "老師測試模式" : `今天還可以問 ${remaining} 次`;
   } catch (err) {
     t.remove();
-    note(err.message);
+    if (!err.silent) note(err.message);
   } finally {
     busy = false; $("send").disabled = false; q.focus();
   }
@@ -347,8 +358,7 @@ $("ver").textContent = APP_VERSION;
 fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "info" }) })
   .then(r => r.json()).then(d => showUpdated(d.updated)).catch(() => {});
 
-const saved = store.get("sb_sno");
-if (saved) enter(saved).catch(() => { store.del("sb_sno"); studentNo = null; });
+store.del("sb_sno"); store.del("sb_conv"); // 不再記住學號，每次都要重新登入
 </script>
 </body>
 </html>
