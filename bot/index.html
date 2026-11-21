@@ -118,6 +118,9 @@
     .bar { padding: 6px 16px 0; }
     .msg { max-width: 90%; }
   }
+  #pin-panel { max-width: 360px; margin: 16px auto 0; padding: 0 20px; width: 100%; }
+  #pin-panel h2 { font-size: 18px; margin-bottom: 12px; }
+  #pin-panel .row { display: flex; gap: 10px; }
   .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 20px 0; font-size: 12px; color: var(--muted); }
 </style>
 </head>
@@ -131,6 +134,7 @@
     <div class="hdr">
       <span id="hdr-actions" class="hdr" style="display:none;">
         <button id="new-btn" type="button">開始新對話</button>
+        <button id="pin-btn" type="button">改密碼</button>
         <button id="out-btn" type="button">登出</button>
       </span>
       <button id="theme-btn" type="button" aria-label="切換淺色或深色背景">深色</button>
@@ -141,7 +145,8 @@
     <div class="card">
       <h2>同學好</h2>
       <p>輸入學號才開始對話。分身會陪你把想法想清楚。</p>
-      <input id="sno" inputmode="text" autocomplete="off" placeholder="學號">
+      <input id="sno" inputmode="text" autocomplete="username" placeholder="學號後四碼">
+      <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="四位數密碼">
       <button id="login-btn" class="primary" type="button">進入</button>
       <div class="err" id="login-err"></div>
       <div class="ver" id="ver"></div>
@@ -150,6 +155,14 @@
 
   <section id="chat">
     <div class="bar"><span id="who"></span><span id="left"></span></div>
+    <div id="pin-panel" class="card" style="display:none;">
+      <h2>修改密碼</h2>
+      <input id="old-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="舊密碼">
+      <input id="new-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="新的四位數密碼">
+      <input id="new-pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="再輸入一次新密碼">
+      <div class="row"><button id="pin-ok" class="primary" type="button">確認修改</button><button id="pin-cancel" type="button">取消</button></div>
+      <div class="err" id="pin-err"></div>
+    </div>
     <div id="msgs" aria-live="polite"></div>
     <form id="f">
       <textarea id="q" rows="1" placeholder="想問什麼？（Enter 送出，Shift+Enter 換行）"></textarea>
@@ -160,7 +173,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.12";
+const APP_VERSION = "v1.13";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
@@ -262,9 +275,9 @@ function greet() {
   add("assistant", `${hello}，${studentName}！${care}\n音樂繪畫畫到哪裡了？有什麼卡住的地方，或對設計、創作有什麼疑問，都可以跟我聊聊。`);
 }
 
-async function enter(sno) {
+async function enter(sno, pin) {
   studentNo = sno;
-  const { name, updated, token } = await call({ action: "login" });
+  const { name, updated, token } = await call({ action: "login", pin });
   sessionToken = token || "";
   studentName = name;
   showUpdated(updated);
@@ -281,16 +294,48 @@ async function enter(sno) {
 
 $("login-btn").onclick = async () => {
   const sno = $("sno").value.trim();
-  if (!sno) return;
+  const pin = $("pin").value.trim();
+  if (!sno) { $("sno").focus(); return; }
+  if (!/^\d{4}$/.test(pin)) { $("login-err").textContent = "請輸入四位數密碼。"; $("pin").focus(); return; }
   $("login-err").textContent = "";
   $("login-btn").disabled = true;
-  try { await enter(sno); }
-  catch (e) { $("login-err").textContent = e.message; studentNo = null; }
+  try { await enter(sno, pin); }
+  catch (e) { $("login-err").textContent = e.message; studentNo = null; $("pin").value = ""; }
   finally { $("login-btn").disabled = false; }
 };
 $("sno").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.isComposing) $("pin").focus();
+});
+$("pin").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.isComposing) $("login-btn").click();
 });
+
+// 修改密碼
+function closePin() {
+  $("pin-panel").style.display = "none";
+  ["old-pin", "new-pin", "new-pin2"].forEach(id => $(id).value = "");
+  $("pin-err").textContent = "";
+}
+$("pin-btn").onclick = () => {
+  const open = $("pin-panel").style.display !== "none";
+  if (open) { closePin(); return; }
+  $("pin-panel").style.display = "block";
+  $("old-pin").focus();
+};
+$("pin-cancel").onclick = closePin;
+$("pin-ok").onclick = async () => {
+  const oldPin = $("old-pin").value.trim(), newPin = $("new-pin").value.trim();
+  if (!/^\d{4}$/.test(newPin)) { $("pin-err").textContent = "新密碼要是四位數字。"; return; }
+  if (newPin !== $("new-pin2").value.trim()) { $("pin-err").textContent = "兩次輸入的新密碼不一樣。"; return; }
+  $("pin-ok").disabled = true;
+  try {
+    await call({ action: "change_pin", old_pin: oldPin, new_pin: newPin });
+    closePin();
+    note("密碼改好了，下次登入請用新密碼。");
+  } catch (e) {
+    if (!e.silent) $("pin-err").textContent = e.message;
+  } finally { $("pin-ok").disabled = false; }
+};
 
 $("new-btn").onclick = () => {
   if (busy) return;
