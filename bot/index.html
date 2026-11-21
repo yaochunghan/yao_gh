@@ -73,6 +73,7 @@
   .card { width: 100%; max-width: 360px; }
   .card h2 { font-size: 22px; font-weight: 800; margin: 0 0 6px; letter-spacing: -.01em; }
   .card p { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+  .card p .hl { color: var(--ink); font-size: 18px; font-weight: 800; }
   .card input {
     width: 100%; font: inherit; padding: 12px 14px; border: 1px solid var(--line);
     border-radius: 10px; background: var(--paper); margin-bottom: 12px;
@@ -144,7 +145,7 @@
   <section id="login">
     <div class="card">
       <h2>同學好</h2>
-      <p>輸入學號才開始對話。分身會陪你把想法想清楚。</p>
+      <p>輸入<strong class="hl">學號後四碼</strong>才開始對話。分身會陪你把想法想清楚。</p>
       <input id="sno" inputmode="text" autocomplete="username" placeholder="學號後四碼">
       <input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="四位數密碼">
       <button id="login-btn" class="primary" type="button">進入</button>
@@ -173,7 +174,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.13";
+const APP_VERSION = "v1.14";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
