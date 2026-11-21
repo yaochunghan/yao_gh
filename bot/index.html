@@ -122,6 +122,7 @@
   #pin-panel { max-width: 360px; margin: 16px auto 0; padding: 0 20px; width: 100%; }
   #pin-panel h2 { font-size: 18px; margin-bottom: 12px; }
   #pin-panel .row { display: flex; gap: 10px; }
+  #pin-panel .pin-note { color: var(--muted); font-size: 13px; margin: -4px 0 14px; }
   .bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 20px 0; font-size: 12px; color: var(--muted); }
 </style>
 </head>
@@ -158,6 +159,7 @@
     <div class="bar"><span id="who"></span><span id="left"></span></div>
     <div id="pin-panel" class="card" style="display:none;">
       <h2>修改密碼</h2>
+      <p class="pin-note">新密碼只有你自己知道。系統只存加密後的版本，不會顯示密碼，老師也不會看到。</p>
       <input id="old-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="current-password" placeholder="舊密碼">
       <input id="new-pin" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="新的四位數密碼">
       <input id="new-pin2" type="password" inputmode="numeric" maxlength="4" autocomplete="new-password" placeholder="再輸入一次新密碼">
@@ -174,7 +176,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.14";
+const APP_VERSION = "v1.15";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
