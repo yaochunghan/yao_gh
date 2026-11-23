@@ -176,7 +176,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.15";
+const APP_VERSION = "v1.16";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
@@ -214,7 +214,7 @@ $("theme-btn").onclick = () => {
   store.set("sb_theme", t);
   applyTheme(t);
 };
-let sessionToken = "", studentNo = null, studentName = "", convId = null, busy = false;
+let sessionToken = "", studentNo = null, studentName = "", studentGrade = "", convId = null, busy = false;
 
 function uuid() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -275,12 +275,16 @@ function greet() {
     hello = "這麼晚還在努力";
     care = pick(["今天不要熬太晚，身體比進度重要。", "畫完這一段就早點睡吧。"]);
   }
-  add("assistant", `${hello}，${studentName}！${care}\n音樂繪畫畫到哪裡了？有什麼卡住的地方，或對設計、創作有什麼疑問，都可以跟我聊聊。`);
+  const ask = studentGrade === "大五"
+    ? "畢業設計最近進行得怎麼樣？有什麼卡住的地方，或對創作有什麼想法、疑問，都可以跟我聊聊。"
+    : "音樂繪畫畫到哪裡了？有什麼卡住的地方，或對設計、創作有什麼疑問，都可以跟我聊聊。";
+  add("assistant", `${hello}，${studentName}！${care}\n${ask}`);
 }
 
 async function enter(sno, pin) {
   studentNo = sno;
-  const { name, updated, token } = await call({ action: "login", pin });
+  const { name, updated, token, grade } = await call({ action: "login", pin });
+  studentGrade = grade || "";
   sessionToken = token || "";
   studentName = name;
   showUpdated(updated);
