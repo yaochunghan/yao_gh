@@ -176,7 +176,7 @@
 
 <script>
 const API = "https://mqixdbatdkbiabptrjww.supabase.co/functions/v1/socratic-bot";
-const APP_VERSION = "v1.17";
+const APP_VERSION = "v1.18";
 const IDLE_MINUTES = 20; // 閒置多久自動登出
 let knowledgeUpdated = "";
 function fmtUpdated(iso) {
@@ -258,24 +258,25 @@ function greet() {
   let h = new Date().getHours();
   try { h = Number(new Intl.DateTimeFormat("en-US", { hour: "numeric", hourCycle: "h23", timeZone: "Asia/Taipei" }).format(new Date())); } catch {}
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const y5 = studentGrade === "大五";
   let hello, care;
   if (h >= 5 && h < 11) {
     hello = "早安";
     care = pick(["吃早餐了嗎？", "昨晚睡得好嗎？", "今天也慢慢來就好。"]);
   } else if (h >= 11 && h < 14) {
     hello = "午安";
-    care = pick(["午餐吃了嗎？", "吃飽再畫，比較有力氣。", "中午記得休息一下。"]);
+    care = pick(["午餐吃了嗎？", y5 ? "吃飽再做，比較有力氣。" : "吃飽再畫，比較有力氣。", "中午記得休息一下。"]);
   } else if (h >= 14 && h < 18) {
     hello = "午安";
     care = pick(["下午有點累的話，起來走一走、喝口水。", "今天的課還順利嗎？", "下午容易恍神，先伸個懶腰吧。"]);
   } else if (h >= 18 && h < 23) {
     hello = "晚上好";
-    care = pick(["晚餐吃了嗎？", "今天辛苦了。", "畫累了記得讓眼睛休息一下。"]);
+    care = pick(["晚餐吃了嗎？", "今天辛苦了。", y5 ? "做累了記得讓眼睛休息一下。" : "畫累了記得讓眼睛休息一下。"]);
   } else {
     hello = "這麼晚還在努力";
-    care = pick(["今天不要熬太晚，身體比進度重要。", "畫完這一段就早點睡吧。"]);
+    care = pick(["今天不要熬太晚，身體比進度重要。", y5 ? "做完這一段就早點睡吧。" : "畫完這一段就早點睡吧。"]);
   }
-  const ask = studentGrade === "大五"
+  const ask = y5
     ? "畢業設計最近進行得怎麼樣？有什麼卡住的地方，或對創作有什麼想法、疑問，都可以跟我聊聊。"
     : "音樂繪畫畫到哪裡了？有什麼卡住的地方，或對設計、創作有什麼疑問，都可以跟我聊聊。";
   add("assistant", `${hello}，${studentName}！${care}\n${ask}`);
